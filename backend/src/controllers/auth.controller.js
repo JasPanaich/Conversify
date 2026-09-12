@@ -38,8 +38,9 @@ export const signup = async (req, res) => {
 
     // Authenticate user and generate a token for them if the user is successfully created so they can access protected routes
     if (newUser) {
-        generateToken(newUser._id, res); 
-        await newUser.save();
+        // Persist user first, then issue auth cookie
+        const savedUser = await newUser.save();
+        generateToken(savedUser._id, res); 
         
         // Return the new user's data in the response, excluding the password
         res.status(201).json({
