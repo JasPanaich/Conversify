@@ -1,7 +1,10 @@
 // Controller to hold logic for API routes
+import { sendWelcomeEmail } from "../emails/emailHandlers.js"; // Import the sendWelcomeEmail function
+import { generateToken } from "../lib/utils.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
-import { generateToken } from "../lib/utils.js";
+import { ENV } from "../lib/env.js"; 
+
 
 export const signup = async (req, res) => {
     const {fullName, email, password} = req.body;
@@ -50,8 +53,12 @@ export const signup = async (req, res) => {
             profilePic: newUser.profilePic,
         });
 
-        // TODO: Send a welcome email to the user after successful signup (optional)
-        
+        try {
+            // Send welcome email to the new user
+            await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
+        } catch (error) {
+            console.error("Failed to send welcome email:", error);
+        }
     } else {
         res.status(400).json({ message: "Invalid user data" });
     }
