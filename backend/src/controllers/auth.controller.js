@@ -71,6 +71,11 @@ export const signup = async (req, res) => {
 // Create login function to authenticate user and generate a token for them if the user is successfully authenticated so they can access protected routes
 export const login = async (req, res) => {
     const {email, password} = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+    }
+    
     // Check if email and password are provided
     try {
         const user = await User.findOne({email});
