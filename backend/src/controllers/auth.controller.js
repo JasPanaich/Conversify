@@ -1,7 +1,10 @@
 // Controller to hold logic for API routes
+import { sendWelcomeEmail } from "../emails/emailHandlers.js"; // Import the sendWelcomeEmail function
+import { generateToken } from "../lib/utils.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
-import { generateToken } from "../lib/utils.js";
+import { ENV } from "../lib/env.js"; 
+
 
 export const signup = async (req, res) => {
     const {fullName, email, password} = req.body;
@@ -50,8 +53,12 @@ export const signup = async (req, res) => {
             profilePic: newUser.profilePic,
         });
 
-        // TODO: Send a welcome email to the user after successful signup (optional)
-        
+        try {
+            // Send welcome email to the new user
+            await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
+        } catch (error) {
+            console.error("Failed to send welcome email:", error);
+        }
     } else {
         res.status(400).json({ message: "Invalid user data" });
     }
@@ -59,4 +66,37 @@ export const signup = async (req, res) => {
         console.log("Error in signup controller:", error);
         res.status(500).json({ message: "InternalServer error" });
     }
+};
+
+// Create login function to authenticate user and generate a token for them if the user is successfully authenticated so they can access protected routes
+export const login = async (req, res) => {
+    const {email, password} = req.body;
+    // Check if email and password are provided
+    try {
+        const user = await User.findOne({email});
+        if(!user) return res.status(400).json({ message: "Invalid Credentials" }); // Never tell client which one is incorrect for security reasons
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if(!isPasswordCorrect) return res.status(400).json({ message: "Invalid Credentials" }); 
+
+        generateToken(user._id, res); // Generate token and set it in the response cookie
+
+        // Return the user's data in the response, excluding the password
+        res.status(200).json({
+            _id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            profilePic: user.profilePic,
+        });
+
+    } catch (error) {
+        console.error("Error in login controller:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// Create logout function to clear the authentication token from the response cookie
+export const logout = async (_, res) => {
+    res.cookie("jwt","",{maxAge: 0});
+    res.status(200).json({ message: "Logged out successfully" });
 };
