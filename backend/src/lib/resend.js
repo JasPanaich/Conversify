@@ -1,3 +1,5 @@
+// For sending, receiving, and managing emails
+
 import { Resend } from "resend";
 import { ENV } from "./env.js";
 
