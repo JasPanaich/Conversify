@@ -1,17 +1,26 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import ChatPage from "./pages/ChatPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import { useAuthStore } from "./store/useAuthStore";
+import { useEffect } from "react";
+import PageLoader from "./components/PageLoader";
 
-function App() {
+import { Toaster } from "react-hot-toast";
 
-    const { authUser, login, isLoggedIn } = useAuthStore();
+function App() {    
+  // Check whether user logged in when the app loads
+  const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
+  
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth]) // Rerun only if function itself changes
 
-    console.log("auth user:", authUser);
-    console.log("isLoggedIn:", isLoggedIn);
-    
-    return (
+  console.log({ authUser });
+
+  if(isCheckingAuth) return <PageLoader />;
+
+  return (
       <div className="min-h-screen bg-slate-900 relative flex items-center justify-center p-4 overflow-hidden">
         
       {/* DECORATORS - GRID BG & GLOW SHAPES */}  
@@ -21,10 +30,12 @@ function App() {
 
       {/* Show user these pages */}
       <Routes>
-        <Route path="/" element={<ChatPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/" element={authUser ?  <ChatPage /> : <Navigate to={"/login"} />} />
+        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to={"/"} />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to={"/"} />} />
       </Routes>
+
+      <Toaster/>
       </div>
     );
 }
