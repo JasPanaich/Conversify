@@ -10,12 +10,7 @@ export const useChatStore = create((set,get) => ({
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
-    isSoundEnabled: localStorage.getItem("isSoundEnabled") === true, // Retrieve sound preference from localStorage
 
-    toggleSound: () => {
-        localStorage.setItem("isSoundEnabled", !get().isSoundEnabled)
-        set({isSoundEnabled: !get().isSoundEnabled})
-    },
 
     setActiveTab: (tab) => set({ activeTab: tab }), 
     setSelectedUser: (selectedUser) => set({ selectedUser: selectedUser }),
