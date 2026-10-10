@@ -15,6 +15,7 @@ export const useChatStore = create((set,get) => ({
     setActiveTab: (tab) => set({ activeTab: tab }), 
     setSelectedUser: (selectedUser) => set({ selectedUser: selectedUser }),
 
+    // Fetch all contacts for the current user
     getAllContacts: async () => {
         set ({ isUsersLoading: true });
         try {
@@ -26,7 +27,8 @@ export const useChatStore = create((set,get) => ({
             set ({ isUserLoading: false });
         }
     },
-
+    
+    // Fetch chat partners for the current user
     getMyChatPartners: async () => {
         set ({ isUsersLoading: true });
         try {
@@ -38,4 +40,18 @@ export const useChatStore = create((set,get) => ({
             set ({ isUserLoading: false });
         }
     },
+
+    // Fetch messages for a specific user
+    getMessagesByUserId: async (userId) => {
+        set ({ isMessagesLoading: true });
+        try {
+            const res = await axiosInstance.get(`/message/${userId}`);
+            set({ messages: res.data });
+        } catch (error) {
+            toast.error(error.response.data.messages);
+        } finally {
+            set ({ isMessagesLoading: false });
+        }
+},
+
 }));

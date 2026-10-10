@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Message model to store messages between users
 const messageSchema = new mongoose.Schema(
   {
     senderId: {
