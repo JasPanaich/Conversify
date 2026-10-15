@@ -67,7 +67,7 @@ function ChatContainer() {
                 </div>
               </div>
             ))}
-            {/* 👇 scroll target */}
+            {/* Scroll target  */}
             <div ref={messageEndRef} />
           </div>
         ) : isMessagesLoading ? (

@@ -16,7 +16,7 @@ const __dirname = path.resolve();
 
 const PORT = ENV.PORT || 3000;
 
-app.use(express.json()) // translates incoming requests w/ JSON to let Node.js understand it
+app.use(express.json({ limit: "5mb" })); // translates incoming requests w/ JSON to let Node.js understand it
 app.use(cors({origin:ENV.CLIENT_URL, credentials:true})); // Allow frontend to send cookies -> backend
 app.use(cookieParser());
 

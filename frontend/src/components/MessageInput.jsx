@@ -1,35 +1,40 @@
 import { useRef, useState } from "react";
-import useKeyboardSound from "../hooks/useKeyboardSound";
 import { useChatStore } from "../store/useChatStore";
 import toast from "react-hot-toast";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
 
 // Component for sending messages and uploading images in the chat
 function MessageInput() {
-  const { playRandomKeyStrokeSound } = useKeyboardSound();
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
 
+  // So we can trigger the click event so the user can select an image to upload
   const fileInputRef = useRef(null);
 
-  const { sendMessage, isSoundEnabled } = useChatStore();
+  const { sendMessage } = useChatStore();
 
+  // Submit the message when the user presses enter or clicks the send button
   const handleSendMessage = (e) => {
+    // Prevent because we don't want the page to reload when the form is submitted
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
-    if (isSoundEnabled) playRandomKeyStrokeSound();
 
     sendMessage({
       text: text.trim(),
       image: imagePreview,
     });
+    
+    // Reset the input fields after sending the message
     setText("");
-    setImagePreview("");
+    setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+
+  // Image upload handling: when the user selects an image, we read it as a data URL and set it as the image preview. If the user selects a non-image file, we show an error toast.
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
@@ -40,14 +45,16 @@ function MessageInput() {
     reader.readAsDataURL(file);
   };
 
+  // X button to remove the selected image and reset the file input
   const removeImage = () => {
     setImagePreview(null);
+    // Reset the file input value so the user can select the same image again if they want to
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
     <div className="p-4 border-t border-slate-700/50">
-      {imagePreview && (
+      {imagePreview && ( // If there is an image preview, show it with a remove button
         <div className="max-w-3xl mx-auto mb-3 flex items-center">
           <div className="relative">
             <img
@@ -70,14 +77,12 @@ function MessageInput() {
         <input
           type="text"
           value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            isSoundEnabled && playRandomKeyStrokeSound();
-          }}
+          onChange={(e) => setText(e.target.value)}
           className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-4"
           placeholder="Type your message..."
         />
 
+        // Hidden file input for image upload
         <input
           type="file"
           accept="image/*"
@@ -85,7 +90,8 @@ function MessageInput() {
           onChange={handleImageChange}
           className="hidden"
         />
-
+        
+        // Button to trigger the file input click event for image upload
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
