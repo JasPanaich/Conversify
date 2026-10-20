@@ -7,10 +7,8 @@ import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
-
-
-
-const app = express(); 
+import { app, server } from "./lib/socket.js"
+ 
 
 const __dirname = path.resolve();
 
@@ -20,6 +18,7 @@ app.use(express.json({ limit: "5mb" })); // translates incoming requests w/ JSON
 app.use(cors({origin:ENV.CLIENT_URL, credentials:true})); // Allow frontend to send cookies -> backend
 app.use(cookieParser());
 
+// Handling API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
@@ -33,8 +32,8 @@ if (ENV.NODE_ENV === "production") {
   });
 }
 
-
-app.listen(PORT, () => {
+// To have the socket real-time communication 
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB(); // Connect to the database when the server starts
 });

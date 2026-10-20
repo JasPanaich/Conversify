@@ -1,3 +1,5 @@
+// JWT utility functions for user authentication and authorization
+
 import jwt from "jsonwebtoken"; // Generate a JSON Web Token (JWT) for user authentication
 import { ENV } from "./env.js"; // Import environment variables from the env.js file
 

@@ -1,3 +1,4 @@
+// Protect app from attacks and bots with Arcjet. Learn more at https://arcjet.com/docs
 import arcjet, { shield, detectBot, slidingWindow } from "@arcjet/node";
 import { ENV } from "./env.js";
 
