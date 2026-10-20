@@ -46,7 +46,7 @@ function ChatContainer() {
                 key={msg._id}
                 className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"}`}
               >
-                // Chat bubble so that the message is displayed with different styles based on the sender
+                {/* Chat bubble so that the message is displayed with different styles based on the sender */}
                 <div
                   className={`chat-bubble relative ${
                     msg.senderId === authUser._id

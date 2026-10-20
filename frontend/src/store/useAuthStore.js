@@ -1,78 +1,108 @@
 // Store holds data that many components need to share globally
-import { create } from 'zustand';
-import {axiosInstance} from "../lib/axios"
-import { toast } from 'react-hot-toast';
+import { create } from "zustand";
+import { axiosInstance } from "../lib/axios";
+import toast from "react-hot-toast";
+import { io } from "socket.io-client";
 
-export const useAuthStore = create((set) => ({
-    authUser:null, 
-    isCheckingAuth:true,
-    isSigningup:false,
-    isLoggingIn:false,
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:3000" : "/";
 
-    // Check to see if user is already logged in
-    checkAuth: async () => {
-        try {
-            const res = await axiosInstance.get("/auth/check");
-            set({ authUser: res.data })
-        } catch (error) {
-            console.log("Error in authCheck", error);
-            set({ authUser : null }) // Failed to fetch users state
-        } finally {
-            set({ isCheckingAuth : false }); // Eventually, the state should be false
-        }
+export const useAuthStore = create((set, get) => ({
+  authUser: null,
+  isCheckingAuth: true,
+  isSigningUp: false,
+  isLoggingIn: false,
+  socket: null,
+  onlineUsers: [],
 
-    },
+  checkAuth: async () => {
+    try {
+      const res = await axiosInstance.get("/auth/check");
+      set({ authUser: res.data });
+      get().connectSocket();
+    } catch (error) {
+      console.log("Error in authCheck:", error);
+      set({ authUser: null });
+    } finally {
+      set({ isCheckingAuth: false });
+    }
+  },
 
-    signup : async(data) => {
-        try {
-            set({ isSigningup : true });
-            const res = await axiosInstance.post("/auth/signup", data); // Send the data to the backend
-            set({ authUser : res.data }); // Update the authUser state with the response data
-        
-            // Toast to show success message
-            toast.success("Account created successfully!");
-        } catch (error) {
-            toast.error(error.response.data.message);
-        } finally {
-            set({ isSigningup : false });
-        }
-    },
+  signup: async (data) => {
+    set({ isSigningUp: true });
+    try {
+      const res = await axiosInstance.post("/auth/signup", data);
+      set({ authUser: res.data });
 
-    logout: async() => {
-        try {
-            await axiosInstance.post("/auth/logout");
-            set({ authUser : null });
-            toast.success("Logged out successfully");
-        } catch (error) {
-            toast.error("Error logging out");
-            console.log("Error in logout", error);
-        }
-    },
+      toast.success("Account created successfully!");
+      get().connectSocket();
+    } catch (error) {
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isSigningUp: false });
+    }
+  },
 
-    login : async(data) => {
-        try {
-            set({ isLoggingIn : true });
-            const res = await axiosInstance.post("/auth/login", data); 
-            set({ authUser : res.data }); 
-        
-            // Toast to show success message
-            toast.success("Logged in successfully");
-        } catch (error) {
-            toast.error(error.response.data.message);
-        } finally {
-            set({ isLoggingIn : false });
-        }
-    },
+  login: async (data) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await axiosInstance.post("/auth/login", data);
+      set({ authUser: res.data });
 
-    updateProfile: async(data) => {
-        try {
-            const res = await axiosInstance.put("/auth/update-profile", data);
-            set({ authUser : res.data });
-            toast.success("Profile updated successfully");
-        } catch (error) {
-            toast.error(error.response.data.message);
-        }
-},
+      toast.success("Logged in successfully");
+
+      get().connectSocket();
+    } catch (error) {
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isLoggingIn: false });
+    }
+  },
+
+  logout: async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+      set({ authUser: null });
+      toast.success("Logged out successfully");
+      get().disconnectSocket();
+    } catch (error) {
+      toast.error("Error logging out");
+      console.log("Logout error:", error);
+    }
+  },
+
+  updateProfile: async (data) => {
+    try {
+      const res = await axiosInstance.put("/auth/update-profile", data);
+      set({ authUser: res.data });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.log("Error in update profile:", error);
+      toast.error(error.response.data.message);
+    }
+  },
+
+  // Connect to socket server
+  connectSocket: () => {
+    const { authUser } = get();
+    if (!authUser || get().socket?.connected) return;
+
+    const socket = io(BASE_URL, {
+      withCredentials: true, // Ensures cookies are sent with the connection
+    });
+
+    socket.connect();
+
+    set({ socket });
+
+    // Listen for online users event
+    socket.on("getOnlineUsers", (userIds) => {
+      set({ onlineUsers: userIds });
+    });
+  },
+
+  disconnectSocket: () => {
+    if (get().socket?.connected) get().socket.disconnect();
+  },
 }));
 
 

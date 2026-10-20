@@ -82,7 +82,7 @@ function MessageInput() {
           placeholder="Type your message..."
         />
 
-        // Hidden file input for image upload
+      
         <input
           type="file"
           accept="image/*"
@@ -91,7 +91,6 @@ function MessageInput() {
           className="hidden"
         />
         
-        // Button to trigger the file input click event for image upload
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
