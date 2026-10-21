@@ -19,6 +19,11 @@ const io = new Server(server, {
 // Apply authentication middleware to the Socket.IO server to verify JWT tokens for incoming connections
 io.use(socketAuthMiddleware);
 
+// Checks if user is online or not
+export function getReceiverSocketId(userId) {
+    return userSocketMap[userId]
+}
+
 // Storing online users 
 const userSocketMap = {}; // {userId:socketId}
 
