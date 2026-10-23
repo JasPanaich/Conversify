@@ -2,6 +2,9 @@
 
 A full-stack real-time messaging application with custom JWT authentication, live presence indicators, image sharing, and a clean, responsive UI. Built with the MERN stack and Socket.io.
 
+<img width="1470" height="836" alt="Screenshot 2026-10-22 at 5 04 45 PM" src="https://github.com/user-attachments/assets/0e1cd37e-fafc-4c6c-80d1-e8990bfefed2" />
+
+
 ## Features
 
 **Messaging**
